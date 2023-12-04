@@ -20,10 +20,10 @@ router.post('/login', async function (req, res, next) {
             User.updateLoginTimestamp(username);
             return res.json({token});
         } else {
-            throw new ExpressError("Invalid username/password", 400);
+            throw new ExpressError("Invalid username or password", 400);
         }
     } catch(e) {
-      return next(e);
+        return next(e);
     }
 });
 
@@ -42,7 +42,7 @@ router.post('/register', async function (req, res, next) {
       
       return res.json({token});
     } catch(e) {
-      return next(e);
+        return next(e);
     }
 });
 
