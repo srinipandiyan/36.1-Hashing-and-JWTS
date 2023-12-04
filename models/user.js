@@ -112,7 +112,37 @@ class User {
    *   {username, first_name, last_name, phone}
    */
 
-  static async messagesFrom(username) { }
+  static async messagesFrom(username) { 
+    const result = await db.query(
+      `SELECT m.id,
+          m.to_username,
+          u.first_name,
+          u.last_name,
+          u.phone,
+          m.body,
+          m.sent_at,
+          m.read_at
+        FROM messages AS m
+        JOIN users AS u ON m.to_username = u.username
+        WHERE from_username = $1`,
+      [username]
+    );
+
+    const mappedResults = result.rows.map(val => ({
+      id: val.id,
+      to_user: {
+        username: val.to_username,
+        first_name: val.first_name,
+        last_name: val.last_name,
+        phone: val.phone
+      },
+      body: val.body,
+      sent_at: val.sent_at,
+      read_at: val.read_at
+    }));
+
+    return mappedResults 
+  }
 
   /** Return messages to this user.
    *
@@ -122,7 +152,36 @@ class User {
    *   {username, first_name, last_name, phone}
    */
 
-  static async messagesTo(username) { }
+  static async messagesTo(username) { 
+    const result = await db.query(
+      `SELECT m.id,
+          m.to_username,
+          u.first_name,
+          u.last_name,
+          u.phone,
+          m.body,
+          m.sent_at,
+          m.read_at
+        FROM messages AS m
+        JOIN users AS u ON m.from_username = u.username
+        WHERE to_username = $1`,
+      [username]
+    );
+    const mappedResults = result.rows.map(val => ({
+      id: val.id,
+      from_user: {
+        username: val.from_username,
+        first_name: val.first_name,
+        last_name: val.last_name,
+        phone: val.phone
+      },
+      body: val.body,
+      sent_at: val.sent_at,
+      read_at: val.read_at
+    }));
+
+    return mappedResults
+  }
 }
 
 
