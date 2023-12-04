@@ -27,7 +27,8 @@ class User {
         RETURNING username, password, first_name, last_name, phone`,
       [username, password, first_name, last_name, phone]
     );
-    return result.rows[0];
+    userInfo = result.rows[0];
+    return userInfo
   }
 
   /** Authenticate: is this username/password valid? Returns boolean. */
@@ -61,7 +62,18 @@ class User {
   /** All: basic info on all users:
    * [{username, first_name, last_name, phone}, ...] */
 
-  static async all() { }
+  static async all() { 
+    const result = await db.query(
+      `SELECT useername,
+      first_name,
+      last_name,
+      phone
+      FROM users
+      ORDER BY username`
+    );
+    let users = result.rows;
+    return users;
+  }
 
   /** Get: get user by username
    *
