@@ -13,7 +13,8 @@ class User {
    *    {username, password, first_name, last_name, phone}
    */
 
-  static async register({username, password, first_name, last_name, phone}) { 
+  static async register({username, password, first_name, last_name, phone}) {
+    let hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
     const result = await db.query(
       `INSERT INTO users (
             username,
@@ -25,9 +26,9 @@ class User {
             last_login_at)
         VALUES ($1, $2, $3, $4, $5, current_timestamp, current_timestamp)
         RETURNING username, password, first_name, last_name, phone`,
-      [username, password, first_name, last_name, phone]
+      [username, hashedPassword, first_name, last_name, phone]
     );
-    userInfo = result.rows[0];
+    const userInfo = result.rows[0];
     return userInfo
   }
 
@@ -41,7 +42,7 @@ class User {
       [username]
     );
 
-    let user = result.rows[0];
+    const user = result.rows[0];
     return user && await bcrypt.compare(password, user.password);
   }
 
@@ -101,7 +102,8 @@ class User {
     if (!result.rows[0]){
       throw new ExpressError(`user with username, '${username}', does not exist.`, 404);
     }
-
+    const user = result.rows[0];
+    return user;
   }
 
   /** Return messages from this user.
@@ -155,7 +157,7 @@ class User {
   static async messagesTo(username) { 
     const result = await db.query(
       `SELECT m.id,
-          m.to_username,
+          m.from_username,
           u.first_name,
           u.last_name,
           u.phone,
