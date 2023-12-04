@@ -16,13 +16,13 @@ class User {
   static async register({username, password, first_name, last_name, phone}) { 
     const result = await db.query(
       `INSERT INTO users (
-          username,
-          password,
-          first_name,
-          last_name,
-          phone,
-          join_at,
-          last_login_at)
+            username,
+            password,
+            first_name,
+            last_name,
+            phone,
+            join_at,
+            last_login_at)
         VALUES ($1, $2, $3, $4, $5, current_timestamp, current_timestamp)
         RETURNING username, password, first_name, last_name, phone`,
       [username, password, first_name, last_name, phone]
@@ -35,7 +35,9 @@ class User {
 
   static async authenticate(username, password) { 
     const result = await db.query(
-      "SELECT password from users WHERE username = $1",
+      `SELECT password 
+        FROM users
+        WHERE username = $1`,
       [username]
     );
 
@@ -48,14 +50,14 @@ class User {
   static async updateLoginTimestamp(username) {
     const result = await db.query(
       `UPDATE users
-      SET last_login_at = current_timestamp
-      WHERE username = $1
-      RETURNING username`,
+        SET last_login_at = current_timestamp
+        WHERE username = $1
+        RETURNING username`,
       [username]
     );
     
     if (!result.rows[0]) {
-      throw new ExpressError(`username does not exist: ${username}`, 404);
+      throw new ExpressError(`user with username, '${username}', does not exist.`, 404);
     }
   }
 
@@ -64,12 +66,12 @@ class User {
 
   static async all() { 
     const result = await db.query(
-      `SELECT useername,
-      first_name,
-      last_name,
-      phone
-      FROM users
-      ORDER BY username`
+      `SELECT username,
+              first_name,
+              last_name,
+              phone
+        FROM users
+        ORDER BY username`
     );
     let users = result.rows;
     return users;
@@ -84,7 +86,23 @@ class User {
    *          join_at,
    *          last_login_at } */
 
-  static async get(username) { }
+  static async get(username) { 
+    const result = await db.query(
+      `SELECT username,
+          first_name,
+          last_name,
+          phone,
+          join_at,
+          last_login_at
+        FROM users
+        WHERE username = $1`,
+      [username]
+    );
+    if (!result.rows[0]){
+      throw new ExpressError(`user with username, '${username}', does not exist.`, 404);
+    }
+
+  }
 
   /** Return messages from this user.
    *
